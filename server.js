@@ -775,7 +775,7 @@ const distPath = new URL('./dist', import.meta.url).pathname;
 app.use(express.static(distPath));
 
 // Catch-all handler for any request that doesn't match an API route
-app.get('*', (req, res, next) => {
+app.get(/(.*)/, (req, res, next) => {
     if (req.path.startsWith('/api')) {
         return next();
     }
