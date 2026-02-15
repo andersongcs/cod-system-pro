@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, Eye, Variable, Check, X, MapPin, Loader2 } from "lucide-react";
+import { FileText, Eye, Variable, Check, X, MapPin, Loader2, Bell, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -224,6 +224,8 @@ export default function SettingsMessages() {
                         {template.id === "confirmed" && <Check className="h-4 w-4 text-success" />}
                         {template.id === "cancelled" && <X className="h-4 w-4 text-destructive" />}
                         {template.id === "address_update" && <MapPin className="h-4 w-4 text-info" />}
+                        {template.id === "first_reminder" && <Bell className="h-4 w-4 text-warning" />}
+                        {template.id === "second_reminder" && <Clock className="h-4 w-4 text-destructive" />}
                         <span className="font-medium">{template.name}</span>
                       </div>
                     </button>

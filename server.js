@@ -995,9 +995,7 @@ const sendReminder = async (order, templateId) => {
         }
 
         // Replace variables in template
-        let message = templateData.content
-            .replace(/\{\{nome_cliente\}\}/g, order.customer_name)
-            .replace(/\{\{numero_pedido\}\}/g, order.order_number);
+        let message = replaceMessageVariables(templateData.content, order);
 
         // Add anti-bot delay
         await randomDelay();

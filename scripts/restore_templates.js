@@ -62,6 +62,26 @@ Responde *1* o *2*👇`,
         name: 'Atualizar Endereço',
         content: `📍 Por favor, envie o novo endereço completo nesta conversa.`,
         variables: ["nome_cliente", "numero_pedido"]
+    },
+    {
+        id: 'first_reminder',
+        name: 'Lembrete 1 (2h)',
+        content: `👋 Olá {nome_cliente}! 
+
+Notamos que você ainda não confirmou o seu pedido #{numero_pedido}. 📦
+
+Podemos prosseguir com o envio? Responda com *1* para confirmar.`,
+        variables: ["nome_cliente", "numero_pedido", "greeting"]
+    },
+    {
+        id: 'second_reminder',
+        name: 'Lembrete 2 (6h)',
+        content: `⏳ Última chamada {nome_cliente}! 
+
+Seu pedido #{numero_pedido} está reservado, mas precisamos da sua confirmação para enviá-lo ainda hoje. 🚛
+
+Responda *1* para Confirmar ou *2* para Cancelar.`,
+        variables: ["nome_cliente", "numero_pedido", "greeting"]
     }
 ];
 
