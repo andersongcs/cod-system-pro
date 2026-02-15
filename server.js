@@ -46,9 +46,11 @@ const whatsappClient = new Client({
             '--disable-dev-shm-usage',
             '--disable-accelerated-2d-canvas',
             '--no-first-run',
-            '--no-zygote',
-            '--single-process',
-            '--disable-gpu'
+            '--disable-gpu',
+            '--disable-extensions',
+            '--disable-default-apps',
+            '--mute-audio',
+            '--no-default-browser-check'
         ],
     }
 });
@@ -60,9 +62,22 @@ whatsappClient.on('qr', async (qr) => {
     console.log('QR Code received from WhatsApp');
     try {
         qrCodeData = await qrcode.toDataURL(qr);
+        console.log('QR Code generated successfully');
     } catch (err) {
         console.error('Error generating QR code:', err);
     }
+});
+
+whatsappClient.on('loading_screen', (percent, message) => {
+    console.log(`WhatsApp Loading: ${percent}% - ${message}`);
+});
+
+whatsappClient.on('auth_failure', (msg) => {
+    console.error('WhatsApp Auth Failure:', msg);
+});
+
+whatsappClient.on('change_state', (state) => {
+    console.log('WhatsApp State Change:', state);
 });
 
 whatsappClient.on('ready', () => {
@@ -75,15 +90,17 @@ whatsappClient.on('authenticated', () => {
     console.log('WhatsApp Authenticated');
 });
 
-whatsappClient.on('disconnected', () => {
-    console.log('WhatsApp Disconnected');
+whatsappClient.on('disconnected', (reason) => {
+    console.log('WhatsApp Disconnected:', reason);
     isWhatsappReady = false;
-    whatsappClient.initialize(); // Re-initialize to allow reconnection
+    // whatsappClient.initialize(); // Avoid infinite loops during debug
 });
 
 // Initialize WhatsApp
 console.log('Initializing WhatsApp Client...');
-whatsappClient.initialize().catch(err => {
+whatsappClient.initialize().then(() => {
+    console.log('WhatsApp Client init promise resolved');
+}).catch(err => {
     console.error('Failed to initialize WhatsApp:', err);
 });
 
