@@ -92,11 +92,7 @@ const availableVariables = [
   { key: "valor_total", description: "Valor total (Legacy)", example: "..." },
   { key: "link_rastreio", description: "Link de rastreamento", example: "https://..." },
 ];
-{ key: "itens", description: "Lista de produtos", example: "• 2x Camiseta Básica\n• 1x Shorts" },
-{ key: "endereco", description: "Endereço de entrega", example: "Rua das Flores, 123, São Paulo - SP" },
-{ key: "valor_total", description: "Valor total do pedido", example: "R$ 299,90" },
-{ key: "link_rastreio", description: "Link de rastreamento", example: "https://rastreio.correios.com.br/..." },
-];
+
 
 export default function SettingsMessages() {
   const [templates, setTemplates] = useState<MessageTemplate[]>(defaultTemplates);
