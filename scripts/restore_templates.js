@@ -82,6 +82,16 @@ Seu pedido #{numero_pedido} está reservado, mas precisamos da sua confirmação
 
 Responda *1* para Confirmar ou *2* para Cancelar.`,
         variables: ["nome_cliente", "numero_pedido", "greeting"]
+    },
+    {
+        id: 'auto_cancelled',
+        name: 'Cancelamento Automático (24h)',
+        content: `🚫 Pedido Cancelado Automaticamente
+
+{nome_cliente}, como não recebemos sua confirmação em 24h, seu pedido #{numero_pedido} foi cancelado para liberar o estoque.
+
+Caso ainda queira os produtos, por favor faça um novo pedido em nossa loja: {url_loja}`,
+        variables: ["nome_cliente", "numero_pedido", "url_loja"]
     }
 ];
 
