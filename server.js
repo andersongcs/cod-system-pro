@@ -577,7 +577,7 @@ whatsappClient.on('message_create', async msg => {
                         .single();
 
                     const confirmedMessage = confirmedTemplate?.content || '✅ Pedido confirmado com sucesso! Logo enviaremos o rastreio.';
-                    await whatsappClient.sendMessage(msg.from, confirmedMessage);
+                    await whatsappClient.sendMessage(msg.from, replaceMessageVariables(confirmedMessage, order));
                     console.log(`Order ${order.order_number} confirmed by ${msg.fromMe ? 'SELF' : 'CUSTOMER'}.`);
 
                 } else if (body === '2') {
@@ -601,7 +601,7 @@ whatsappClient.on('message_create', async msg => {
                         .single();
 
                     const cancelledMessage = cancelledTemplate?.content || '❌ Pedido cancelado e estornado na loja com sucesso.';
-                    await whatsappClient.sendMessage(msg.from, cancelledMessage);
+                    await whatsappClient.sendMessage(msg.from, replaceMessageVariables(cancelledMessage, order));
                     console.log(`Order ${order.order_number} cancelled.`);
 
                 } else if (body === '3') {
@@ -617,7 +617,7 @@ whatsappClient.on('message_create', async msg => {
                         .single();
 
                     const addressMessage = addressTemplate?.content || '📍 Por favor, envie o novo endereço completo nesta conversa.';
-                    await whatsappClient.sendMessage(msg.from, addressMessage);
+                    await whatsappClient.sendMessage(msg.from, replaceMessageVariables(addressMessage, order));
                 }
             }
         }
@@ -628,6 +628,43 @@ whatsappClient.on('message_create', async msg => {
 
 
 // --- WhatsApp Message Logic ---
+
+// Helper to replace variables in messages
+const replaceMessageVariables = (message, order, itemsList = '') => {
+    if (!message) return '';
+
+    // Random Greeting
+    const greetings = [
+        "Hola",
+        "Buenos días",
+        "Buenas tardes",
+        "Buenas noches",
+        "Saludos",
+        "Hola, ¿cómo estás?"
+    ];
+    const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
+
+    const addressStr = order.address ? (JSON.parse(order.address).address1 || 'Dirección no informada') : 'Dirección no informada';
+
+    return message
+        .replace(/\{greeting\}/g, randomGreeting)
+        .replace(/\{\{greeting\}\}/g, randomGreeting)
+        .replace(/\{nome_cliente\}/g, order.customer_name)
+        .replace(/\{\{nome_cliente\}\}/g, order.customer_name)
+        .replace(/\{orderNumber\}/g, order.order_number)
+        .replace(/\{\{orderNumber\}\}/g, order.order_number)
+        .replace(/\{\{numero_pedido\}\}/g, order.order_number)
+        .replace(/\{items\}/g, itemsList)
+        .replace(/\{\{items\}\}/g, itemsList)
+        .replace(/\{\{itens\}\}/g, itemsList)
+        .replace(/\{address\}/g, addressStr)
+        .replace(/\{\{address\}\}/g, addressStr)
+        .replace(/\{\{endereco\}\}/g, addressStr)
+        .replace(/\{total\}/g, formatCurrency(order.total_value))
+        .replace(/\{\{total\}\}/g, formatCurrency(order.total_value))
+        .replace(/\{\{valor_total\}\}/g, formatCurrency(order.total_value));
+};
+
 const sendWhatsAppConfirmation = async (order) => {
     if (!isWhatsappReady) {
         console.log('WhatsApp client not ready, skipping message.');
@@ -721,29 +758,8 @@ Por favor, confirme seu pedido respondendo:
 
 Aguardamos sua resposta!`;
 
-        // Random Greeting Logic
-        const greetings = [
-            "Hola",
-            "Buenos días",
-            "Buenas tardes",
-            "Buenas noches",
-            "Saludos",
-            "Hola, ¿cómo estás?"
-        ];
-        const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
-
-        // Replace variables with actual values
-        message = message
-            .replace(/\{greeting\}/g, randomGreeting) // Support {greeting}
-            .replace(/\{\{nome_cliente\}\}/g, order.customer_name)
-            .replace(/\{orderNumber\}/g, order.order_number) // Support {orderNumber}
-            .replace(/\{\{numero_pedido\}\}/g, order.order_number)
-            .replace(/\{items\}/g, itemsList) // Support {items}
-            .replace(/\{\{itens\}\}/g, itemsList)
-            .replace(/\{address\}/g, JSON.parse(order.address || '{}').address1 || 'Dirección no informada') // Support {address}
-            .replace(/\{\{endereco\}\}/g, JSON.parse(order.address || '{}').address1 || 'Dirección no informada')
-            .replace(/\{total\}/g, formatCurrency(order.total_value)) // Support {total}
-            .replace(/\{\{valor_total\}\}/g, formatCurrency(order.total_value));
+        // Helper usage
+        message = replaceMessageVariables(message, order, itemsList);
 
         console.log('[DEBUG] Sending message...');
         await whatsappClient.sendMessage(chatId, message);
