@@ -519,9 +519,9 @@ whatsappClient.on('message_create', async msg => {
             //   - I send '1' (testing): from=me, to=customer. 
 
             // FIXED LOGIC:
-            // Whether from me or from another, the "person who typed 1" is in msg.from.
-            let targetPhoneRaw = msg.from;
-            const targetPhone = targetPhoneRaw.replace('@c.us', '');
+            // Resolve contact to get the real phone number (handles @lid and @c.us)
+            const contact = await msg.getContact();
+            const targetPhone = contact.number || contact.id.user;
 
             // Match order by phone (endsWith logic)
             const last8Digits = targetPhone.slice(-8);
