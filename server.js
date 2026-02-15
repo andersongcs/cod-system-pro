@@ -721,12 +721,28 @@ Por favor, confirme seu pedido respondendo:
 
 Aguardamos sua resposta!`;
 
+        // Random Greeting Logic
+        const greetings = [
+            "Hola",
+            "Buenos días",
+            "Buenas tardes",
+            "Buenas noches",
+            "Saludos",
+            "Hola, ¿cómo estás?"
+        ];
+        const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
+
         // Replace variables with actual values
         message = message
+            .replace(/\{greeting\}/g, randomGreeting) // Support {greeting}
             .replace(/\{\{nome_cliente\}\}/g, order.customer_name)
+            .replace(/\{orderNumber\}/g, order.order_number) // Support {orderNumber}
             .replace(/\{\{numero_pedido\}\}/g, order.order_number)
+            .replace(/\{items\}/g, itemsList) // Support {items}
             .replace(/\{\{itens\}\}/g, itemsList)
-            .replace(/\{\{endereco\}\}/g, JSON.parse(order.address || '{}').address1 || 'Direção não informada')
+            .replace(/\{address\}/g, JSON.parse(order.address || '{}').address1 || 'Dirección no informada') // Support {address}
+            .replace(/\{\{endereco\}\}/g, JSON.parse(order.address || '{}').address1 || 'Dirección no informada')
+            .replace(/\{total\}/g, formatCurrency(order.total_value)) // Support {total}
             .replace(/\{\{valor_total\}\}/g, formatCurrency(order.total_value));
 
         console.log('[DEBUG] Sending message...');

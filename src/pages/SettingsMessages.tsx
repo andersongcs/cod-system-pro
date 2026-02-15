@@ -80,12 +80,22 @@ Aguardamos sua resposta para atualizar o pedido #{{numero_pedido}}.`,
 ];
 
 const availableVariables = [
-  { key: "nome_cliente", description: "Nome do cliente", example: "João Silva" },
-  { key: "numero_pedido", description: "Número do pedido", example: "1001" },
-  { key: "itens", description: "Lista de produtos", example: "• 2x Camiseta Básica\n• 1x Shorts" },
-  { key: "endereco", description: "Endereço de entrega", example: "Rua das Flores, 123, São Paulo - SP" },
-  { key: "valor_total", description: "Valor total do pedido", example: "R$ 299,90" },
-  { key: "link_rastreio", description: "Link de rastreamento", example: "https://rastreio.correios.com.br/..." },
+  { key: "greeting", description: "Saudação aleatória (ex: Hola, Buenos días)", example: "Hola" },
+  { key: "orderNumber", description: "Número do pedido", example: "1001" },
+  { key: "items", description: "Lista de produtos", example: "• 2x Camiseta..." },
+  { key: "address", description: "Endereço de entrega", example: "Calle 123..." },
+  { key: "total", description: "Valor total", example: "$ 50.000" },
+  { key: "nome_cliente", description: "Nome do cliente (Legacy)", example: "João Silva" },
+  { key: "numero_pedido", description: "Número do pedido (Legacy)", example: "1001" },
+  { key: "itens", description: "Lista de produtos (Legacy)", example: "..." },
+  { key: "endereco", description: "Endereço (Legacy)", example: "..." },
+  { key: "valor_total", description: "Valor total (Legacy)", example: "..." },
+  { key: "link_rastreio", description: "Link de rastreamento", example: "https://..." },
+];
+{ key: "itens", description: "Lista de produtos", example: "• 2x Camiseta Básica\n• 1x Shorts" },
+{ key: "endereco", description: "Endereço de entrega", example: "Rua das Flores, 123, São Paulo - SP" },
+{ key: "valor_total", description: "Valor total do pedido", example: "R$ 299,90" },
+{ key: "link_rastreio", description: "Link de rastreamento", example: "https://rastreio.correios.com.br/..." },
 ];
 
 export default function SettingsMessages() {
