@@ -578,7 +578,9 @@ whatsappClient.on('message_create', async msg => {
                         .single();
 
                     const confirmedMessage = confirmedTemplate?.content || '✅ Pedido confirmado com sucesso! Logo enviaremos o rastreio.';
-                    await whatsappClient.sendMessage(msg.from, replaceMessageVariables(confirmedMessage, order));
+
+                    const itemsList = formatItemsList(order.items);
+                    await whatsappClient.sendMessage(msg.from, replaceMessageVariables(confirmedMessage, order, itemsList));
                     console.log(`Order ${order.order_number} confirmed by ${msg.fromMe ? 'SELF' : 'CUSTOMER'}.`);
 
                 } else if (body === '2') {
@@ -669,6 +671,27 @@ const replaceMessageVariables = (message, order, itemsList = '') => {
         .replace(/\{\{valor_total\}\}/g, formatCurrency(order.total_value));
 };
 
+const formatItemsList = (items) => {
+    if (!items || !Array.isArray(items)) return '';
+
+    const itemsMap = {};
+    items.forEach(item => {
+        if (itemsMap[item.name]) {
+            itemsMap[item.name].quantity += item.quantity;
+        } else {
+            itemsMap[item.name] = {
+                name: item.name,
+                quantity: item.quantity,
+                price: item.price
+            };
+        }
+    });
+
+    return Object.values(itemsMap).map(i =>
+        `- ${i.quantity}x ${i.name} (${formatCurrency(i.price)})`
+    ).join('\n');
+};
+
 const sendWhatsAppConfirmation = async (order, enableDelay = false) => {
     console.log(`[DEBUG] sendWhatsAppConfirmation called for ${order.order_number}. EnableDelay: ${enableDelay}`);
     if (!isWhatsappReady) {
@@ -687,10 +710,7 @@ const sendWhatsAppConfirmation = async (order, enableDelay = false) => {
 
         // Brazilian Number Logic (55)
         if (phone.startsWith('55') && phone.length === 13 && phone[4] === '9') {
-            // Sometimes whatsapp-web.js prefers the format WITHOUT the 9 for connections, 
-            // but usually WITH the 9 for sending to non-contacts.
-            // However, specifically for "c.us" IDs, it's safer to try maintaining the standard.
-            // Let's rely on what the user provided but sanitized. 
+            // Brazilian logic kept as is
         }
 
         // Colombian Number Logic (add 57 if missing)
@@ -699,7 +719,6 @@ const sendWhatsAppConfirmation = async (order, enableDelay = false) => {
         }
 
         // WhatsApp ID format
-        // Use getNumberId to resolve the correct ID (handles the 9 digit issue automatically)
         let chatId;
         try {
             const result = await whatsappClient.getNumberId(phone);
@@ -710,7 +729,6 @@ const sendWhatsAppConfirmation = async (order, enableDelay = false) => {
             chatId = result._serialized;
             console.log(`[DEBUG] Resolved ChatID: ${chatId}`);
         } catch (idErr) {
-            // Fallback for some business accounts or if getNumberId fails
             console.log('[DEBUG] getNumberId failed, falling back to manual construction');
             chatId = `${phone}@c.us`;
         }
@@ -729,23 +747,7 @@ const sendWhatsAppConfirmation = async (order, enableDelay = false) => {
             // Fallback to default if template not found
         }
 
-        // Format Items list - Group duplicate items by name
-        const itemsMap = {};
-        order.items.forEach(item => {
-            if (itemsMap[item.name]) {
-                itemsMap[item.name].quantity += item.quantity;
-            } else {
-                itemsMap[item.name] = {
-                    name: item.name,
-                    quantity: item.quantity,
-                    price: item.price
-                };
-            }
-        });
-
-        const itemsList = Object.values(itemsMap).map(i =>
-            `- ${i.quantity}x ${i.name} (${formatCurrency(i.price)})`
-        ).join('\n');
+        const itemsList = formatItemsList(order.items);
 
         // Use template from database or fallback
         let message = templateData?.content || `Olá {{nome_cliente}}! 👋
