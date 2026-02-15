@@ -172,7 +172,8 @@ const verifyShopifyWebhook = async (req) => {
     return digest === hmacHeader;
 };
 
-app.post('/api/webhooks/shopify', async (req, res) => {
+// Match both the generic and specific "orders/create" path
+app.post(['/api/webhooks/shopify', '/api/webhooks/shopify/orders/create'], async (req, res) => {
     console.log('Received webhook request...'); // Log receipt
 
     try {
