@@ -15,6 +15,7 @@ interface WhatsappStatus {
   connected: boolean;
   qr: string | null;
   info: any;
+  message?: string;
 }
 
 export default function SettingsWhatsApp() {
@@ -164,6 +165,11 @@ export default function SettingsWhatsApp() {
                 <p className="text-sm text-muted-foreground">
                   Gerando QR Code...
                 </p>
+                {status?.message && (
+                  <p className="text-xs text-muted-foreground mt-2 bg-muted p-2 rounded max-w-sm text-center">
+                    Log do Servidor: {status.message}
+                  </p>
+                )}
               </div>
             )}
           </CardContent>

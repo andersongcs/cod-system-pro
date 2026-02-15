@@ -57,51 +57,62 @@ const whatsappClient = new Client({
 
 let qrCodeData = null;
 let isWhatsappReady = false;
+let connectionLog = 'Initializing...';
 
 whatsappClient.on('qr', async (qr) => {
-    console.log('QR Code received from WhatsApp');
+    connectionLog = 'QR Code received. Generating image...';
+    console.log(connectionLog);
     try {
         qrCodeData = await qrcode.toDataURL(qr);
-        console.log('QR Code generated successfully');
+        connectionLog = 'QR Code generated successfully. Waiting for scan...';
+        console.log(connectionLog);
     } catch (err) {
-        console.error('Error generating QR code:', err);
+        connectionLog = `Error generating QR: ${err.message}`;
+        console.error(connectionLog);
     }
 });
 
 whatsappClient.on('loading_screen', (percent, message) => {
-    console.log(`WhatsApp Loading: ${percent}% - ${message}`);
+    connectionLog = `WhatsApp Loading: ${percent}% - ${message}`;
+    console.log(connectionLog);
 });
 
 whatsappClient.on('auth_failure', (msg) => {
-    console.error('WhatsApp Auth Failure:', msg);
+    connectionLog = `Auth Failure: ${msg}`;
+    console.error(connectionLog);
 });
 
 whatsappClient.on('change_state', (state) => {
-    console.log('WhatsApp State Change:', state);
+    connectionLog = `State Changed: ${state}`;
+    console.log(connectionLog);
 });
 
 whatsappClient.on('ready', () => {
-    console.log('WhatsApp Client is ready!');
+    connectionLog = 'WhatsApp Client is ready!';
+    console.log(connectionLog);
     isWhatsappReady = true;
-    qrCodeData = null; // Clear QR code on success
+    qrCodeData = null;
 });
 
 whatsappClient.on('authenticated', () => {
-    console.log('WhatsApp Authenticated');
+    connectionLog = 'WhatsApp Authenticated';
+    console.log(connectionLog);
 });
 
 whatsappClient.on('disconnected', (reason) => {
-    console.log('WhatsApp Disconnected:', reason);
+    connectionLog = `Disconnected: ${reason}`;
+    console.log(connectionLog);
     isWhatsappReady = false;
-    // whatsappClient.initialize(); // Avoid infinite loops during debug
 });
 
 // Initialize WhatsApp
 console.log('Initializing WhatsApp Client...');
 whatsappClient.initialize().then(() => {
-    console.log('WhatsApp Client init promise resolved');
+    connectionLog = 'WhatsApp Client init promise resolved. Waiting for browser...';
+    console.log(connectionLog);
 }).catch(err => {
-    console.error('Failed to initialize WhatsApp:', err);
+    connectionLog = `Init Failed: ${err.message}`;
+    console.error(connectionLog);
 });
 
 // --- API Endpoints for WhatsApp ---
@@ -110,7 +121,8 @@ app.get('/api/whatsapp/status', (req, res) => {
     res.json({
         connected: isWhatsappReady,
         qr: qrCodeData,
-        info: isWhatsappReady ? whatsappClient.info : null
+        info: isWhatsappReady ? whatsappClient.info : null,
+        message: connectionLog
     });
 });
 
