@@ -770,8 +770,14 @@ const cancelShopifyOrder = async (shopifyOrderId) => {
     }
 };
 
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
 // --- Serve Static Frontend (Production) ---
-const distPath = new URL('./dist', import.meta.url).pathname;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const distPath = join(__dirname, 'dist');
+
 app.use(express.static(distPath));
 
 // Catch-all handler for any request that doesn't match an API route
@@ -779,7 +785,7 @@ app.get(/(.*)/, (req, res, next) => {
     if (req.path.startsWith('/api')) {
         return next();
     }
-    res.sendFile(new URL('./dist/index.html', import.meta.url).pathname);
+    res.sendFile(join(distPath, 'index.html'));
 });
 
 app.listen(port, () => {
