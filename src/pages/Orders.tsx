@@ -181,7 +181,7 @@ export default function Orders() {
                 </TableHeader>
                 <TableBody>
                   {filteredOrders.map((order) => {
-                    const status = statusConfig[order.status];
+                    const status = statusConfig[order.status] || { label: order.status, color: "bg-secondary text-secondary-foreground" };
                     return (
                       <TableRow key={order.id} className="hover:bg-muted/50">
                         <TableCell>

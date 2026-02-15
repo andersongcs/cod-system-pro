@@ -32,14 +32,14 @@ export const orderService = {
       messageSentAt: order.message_sent_at ? new Date(order.message_sent_at) : undefined,
       responseReceivedAt: order.response_received_at ? new Date(order.response_received_at) : undefined,
       timeline: typeof order.timeline === 'string' ? JSON.parse(order.timeline) : (order.timeline || []),
-      items: order.items.map((item: any) => ({
+      items: Array.isArray(order.items) ? order.items.filter((item: any) => item).map((item: any) => ({
         id: item.id,
         name: item.name,
         quantity: item.quantity,
         price: Number(item.price),
         sku: item.sku,
-        variant: item.variant
-      }))
+        variant: item.variant || ''
+      })) : []
     }));
   },
 

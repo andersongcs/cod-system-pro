@@ -39,7 +39,7 @@ export function RecentOrdersList({ orders, onResend, onViewDetails }: RecentOrde
       <CardContent>
         <div className="space-y-4">
           {orders.map((order) => {
-            const status = statusConfig[order.status];
+            const status = statusConfig[order.status] || { label: order.status, variant: 'secondary' };
             return (
               <div
                 key={order.id}
