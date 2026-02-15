@@ -520,14 +520,14 @@ whatsappClient.on('message_create', async msg => {
 
             // FIXED LOGIC:
             // Whether from me or from another, the "person who typed 1" is in msg.from.
-            // (Unless I am sending TO someone and want to simulate THEM confirming? No, that's complex).
-            // For "Test it on my own number", "from" is my number.
-
             let targetPhoneRaw = msg.from;
             const targetPhone = targetPhoneRaw.replace('@c.us', '');
 
             // Match order by phone (endsWith logic)
             const last8Digits = targetPhone.slice(-8);
+
+            connectionLog = `Received '${body}' from ${targetPhone}. Checking orders ending in ${last8Digits}...`;
+            console.log(connectionLog);
 
             const { data: pendingOrders, error } = await supabase
                 .from('orders')
@@ -535,12 +535,24 @@ whatsappClient.on('message_create', async msg => {
                 .eq('status', 'awaiting_response')
                 .order('created_at', { ascending: false });
 
-            if (error || !pendingOrders) return;
+            if (error || !pendingOrders) {
+                console.error('Error fetching pending orders:', error);
+                return;
+            }
 
             const order = pendingOrders.find(o => {
                 const dbPhone = o.customer_phone?.replace(/\D/g, '') || '';
-                return dbPhone.endsWith(last8Digits);
+                const match = dbPhone.endsWith(last8Digits);
+                if (match) {
+                    console.log(`[MATCH] Found order ${o.order_number} for phone ${dbPhone}`);
+                }
+                return match;
             });
+
+            if (!order) {
+                connectionLog = `No pending order found for phone ending in ${last8Digits}. (Checked ${pendingOrders.length} pending orders)`;
+                console.log(connectionLog);
+            }
 
             if (order) {
                 if (body === '1') {
