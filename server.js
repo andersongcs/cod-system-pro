@@ -178,7 +178,6 @@ app.post(['/api/webhooks/shopify', '/api/webhooks/shopify/orders/create'], async
 
     try {
         const isValid = await verifyShopifyWebhook(req);
-
         // For development, we might want to skip verification if secret is not set clearly, 
         // but better to enforce it if possible. 
         // Since user inputs secret in settings, we should try to use it.
@@ -327,7 +326,9 @@ app.post(['/api/webhooks/shopify', '/api/webhooks/shopify/orders/create'], async
             if (!insertedOrder.message_sent_at) {
                 // Re-fetch items if needed, or pass constructed object with items
                 const fullOrderForMsg = { ...insertedOrder, items: orderData.items };
-                await sendWhatsAppConfirmation(fullOrderForMsg);
+                // Send with delay (true) and DO NOT AWAIT to prevent blocking the webhook response
+                console.log(`[WEBHOOK] Scheduling WhatsApp confirmation for order ${orderData.order_number} (non-blocking)`);
+                sendWhatsAppConfirmation(fullOrderForMsg, true).catch(err => console.error('[BG-TASK] Error sending delayed confirmation:', err));
             }
         }
 
@@ -633,15 +634,18 @@ whatsappClient.on('message_create', async msg => {
 const replaceMessageVariables = (message, order, itemsList = '') => {
     if (!message) return '';
 
-    // Random Greeting
-    const greetings = [
-        "Hola",
-        "Buenos días",
-        "Buenas tardes",
-        "Buenas noches",
-        "Saludos",
-        "Hola, ¿cómo estás?"
-    ];
+    // Time-based Greeting Logic
+    const hour = new Date().toLocaleString('en-US', { timeZone: 'America/Bogota', hour: 'numeric', hour12: false });
+    let greetings = ["Hola", "Saludos"]; // Default neutral
+
+    if (hour >= 5 && hour < 12) {
+        greetings = ["Buenos días", "Hola, buenos días", "Buen día"];
+    } else if (hour >= 12 && hour < 18) {
+        greetings = ["Buenas tardes", "Hola, buenas tardes"];
+    } else {
+        greetings = ["Buenas noches", "Hola, buenas noches"];
+    }
+
     const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
 
     const addressStr = order.address ? (JSON.parse(order.address).address1 || 'Dirección no informada') : 'Dirección no informada';
@@ -665,13 +669,19 @@ const replaceMessageVariables = (message, order, itemsList = '') => {
         .replace(/\{\{valor_total\}\}/g, formatCurrency(order.total_value));
 };
 
-const sendWhatsAppConfirmation = async (order) => {
+const sendWhatsAppConfirmation = async (order, enableDelay = false) => {
+    console.log(`[DEBUG] sendWhatsAppConfirmation called for ${order.order_number}. EnableDelay: ${enableDelay}`);
     if (!isWhatsappReady) {
         console.log('WhatsApp client not ready, skipping message.');
         return false;
     }
 
     try {
+        if (enableDelay) {
+            console.log(`[DELAY] Initial message delay active for order ${order.order_number}`);
+            await randomDelay();
+        }
+
         // Format phone number (ensure it has country code, remove non-digits)
         let phone = order.customer_phone?.replace(/\D/g, '') || '';
 
@@ -795,7 +805,8 @@ app.post('/api/whatsapp/send-confirmation', async (req, res) => {
             return res.status(404).send('Order not found');
         }
 
-        const sent = await sendWhatsAppConfirmation(order);
+        // Manual trigger: disable delay so user gets immediate feedback
+        const sent = await sendWhatsAppConfirmation(order, false);
         if (sent) {
             res.json({ success: true, message: 'Message sent' });
         } else {
